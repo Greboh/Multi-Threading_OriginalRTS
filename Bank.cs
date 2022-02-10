@@ -71,10 +71,6 @@ namespace OriginalRTS
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(banklevel1, new Vector2(500, 500), null, this.color, 0, origin, 1, SpriteEffects.None, 1);
-
-            //spriteBatch.Draw(banklevel1, new Vector2(50, 50), Color.White);
-
         }
         public override void Enter(object id)
         {
@@ -86,11 +82,6 @@ namespace OriginalRTS
 
         public override void LoadContent(ContentManager content)
         {
-
-            banklevel1 = content.Load<Texture2D>("bank1");
-            banklevel2 = content.Load<Texture2D>("bank2");
-            banklevel3 = content.Load<Texture2D>("bank3");
-
         }
 
         public override void Update(GameTime gameTime)
