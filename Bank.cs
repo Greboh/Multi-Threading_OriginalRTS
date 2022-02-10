@@ -17,6 +17,7 @@ namespace OriginalRTS
         {
             GameWorld.BankIsUpgrading = false;
 
+            // Switch case changes bank capacity and upgrade cost according to current bank level
             switch (currentBankLevel)
             {
                 case 1:
@@ -45,7 +46,9 @@ namespace OriginalRTS
 
         }
 
-
+        /// <summary>
+        /// Method for upgrading bank
+        /// </summary>
         private void UpgradeBank()
         {
             while (!GameWorld.BankIsUpgrading)
@@ -53,7 +56,7 @@ namespace OriginalRTS
                 // Do nothing while bank is not upgrading
             }
 
-            GameWorld.CurrentBankLevel++;
+            GameWorld.CurrentBankLevel++; // increases bank level by 1
 
             Console.WriteLine($"Bank is upgrading to level {GameWorld.CurrentBankLevel}");
 
@@ -61,8 +64,8 @@ namespace OriginalRTS
 
             Console.WriteLine($"Bank is now upgraded!");
 
-            Instantiate(new Bank(GameWorld.CurrentBankLevel));
-            Destroy(this);
+            Instantiate(new Bank(GameWorld.CurrentBankLevel)); // instansiates new bank level
+            Destroy(this); // destroys previous bank
 
 
         }
