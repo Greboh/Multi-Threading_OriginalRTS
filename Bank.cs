@@ -10,9 +10,7 @@ namespace OriginalRTS
 {
     class Bank : GameObject
     {
-        private Texture2D banklevel1;
-        private Texture2D banklevel2;
-        private Texture2D banklevel3;
+        
 
 
         public Bank(int currentBankLevel)
