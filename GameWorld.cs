@@ -116,8 +116,8 @@ namespace OriginalRTS
             Instantiate(new Bank(currentBankLevel));
 
             base.Initialize();
-            SemaMine.Release(1);
-            semaFarm.Release(1);
+            SemaMine.Release(1); //release one miner into the mine
+            semaFarm.Release(1); //release one miner into the mine
 
             minerBuyString = ($"miners cost {workerCost} gold each! - Press q to buy a new miner!");
             farmerBuyString = ($"farmers cost {workerCost} gold each! - Press w to buy a new farmer!");
@@ -143,7 +143,9 @@ namespace OriginalRTS
 
             base.Update(gameTime);
         }
-
+        /// <summary>
+        /// Method for keybindings associated upgrading bank and purches of new miners
+        /// </summary>
         private void Keybindings()
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Q) && !qIsPressed)
