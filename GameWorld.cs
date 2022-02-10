@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
 
 namespace OriginalRTS
 {
@@ -19,50 +20,69 @@ namespace OriginalRTS
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        private static Semaphore semaMine = new Semaphore(0, 3); // Max 3 workers in mine
+        private static Semaphore semaFarm = new Semaphore(0, 3); // Max 3 workers in mine
+
         private List<GameObject> listOfCurrentObjects = new List<GameObject>(); // List of objects in the game
         private List<GameObject> listOfObjectsToAdd = new List<GameObject>(); // List of objects to add to the game
         private List<GameObject> listOfObjectsToDestroy = new List<GameObject>(); // List of objects to remove from the game
 
-        private readonly int screenHeight = 890;    // Y size of window
-        private readonly int screenWidth = 1215;    // X size of window
+        private static Dictionary<int, WorkerJob> dictionaryOfWorkers = new Dictionary<int, WorkerJob>();
 
-        private int gold;
-        private int maxGold = 1500;
+        private readonly int screenHeight = 915;    // Y size of window
+        private readonly int screenWidth = 1500;    // X size of window
 
-        private bool hasWorkerDeposted = false;
+        private static int currentGold = 10000;
+        private static int maxGold;
+
+        private static int currentWood = 10000;
+        private static int maxWood;
+
+        private static int currentBankLevel = 1;
+        private static int maxBankLevel = 3;
+
+        private static bool bankIsUpgrading = false;
+
+
+        private int workerCost = 200;
+
+        private static int bankGoldCost;
+        private static int bankWoodCost;
+
+        private static int countOfMiners = 0;
+        private static int countOfFarmers = 0;
 
         private SpriteFont textFont;
         private Texture2D goldIngot;
 
 
+        private bool qIsPressed = false;
+        private bool wIsPressed = false;
+        private bool eIsPressed = false;
 
-
-        private static Semaphore semaMine = new Semaphore(0, 3); // Max 3 workers in mine
-        private static Semaphore semaFarm = new Semaphore(0, 3); // Max 3 workers in mine
-
-
-        private static Dictionary<int, WorkerJob> dictionaryOfWorkers = new Dictionary<int, WorkerJob>();
-
-
-        private bool pIsPressed = false;
-        private bool enterIsPressed = false;
-
-
+        private string minerBuyString;
+        private string farmerBuyString;
+        private string bankUpgradeString;
 
 
 
         #region Properties
 
         public static Vector2 ScreenSize { get; set; } //Property for setting the ScreenSize for public use
-
         public static Semaphore SemaMine { get => semaMine; set => semaMine = value; }
-
-        public static Dictionary<int, WorkerJob> DictionaryOfWorkers { get => dictionaryOfWorkers; set => dictionaryOfWorkers = value; }
-        public int Gold { get => gold; set => gold = value; }
-        public bool HasWorkerDeposted { get => hasWorkerDeposted; set => hasWorkerDeposted = value; }
         public static Semaphore SemaFarm { get => semaFarm; set => semaFarm = value; }
-        public int MaxGold { get => maxGold; set => maxGold = value; }
-
+        public static Dictionary<int, WorkerJob> DictionaryOfWorkers { get => dictionaryOfWorkers; set => dictionaryOfWorkers = value; }
+        public static int Gold { get => currentGold; set => currentGold = value; }
+        public static int MaxGold { get => maxGold; set => maxGold = value; }
+        public static int CurrentWood { get => currentWood; set => currentWood = value; }
+        public static int MaxWood { get => maxWood; set => maxWood = value; }
+        public static int CountOfMiners { get => countOfMiners; set => countOfMiners = value; }
+        public static int CountOfFarmers { get => countOfFarmers; set => countOfFarmers = value; }
+        public static int CurrentBankLevel { get => currentBankLevel; set => currentBankLevel = value; }
+        public static int MaxBankLevel { get => maxBankLevel; set => maxBankLevel = value; }
+        public static bool BankIsUpgrading { get => bankIsUpgrading; set => bankIsUpgrading = value; }
+        public static int BankGoldCost { get => bankGoldCost; set => bankGoldCost = value; }
+        public static int BankWoodCost { get => bankWoodCost; set => bankWoodCost = value; }
         #endregion
 
         public GameWorld()
@@ -78,20 +98,21 @@ namespace OriginalRTS
 
         protected override void Initialize()
         {
-            for (int i = 1; i < 6; i++)
+            for (int i = 1; i < 3; i++) // instantiates 2 miners
             {
                 Instantiate(new MineWorker(i));
+                Instantiate(new FarmWorker(i));
             }
 
-            //for (int i = 5; i < 10; i++)
-            //{
-            //    Instantiate(new FarmWorker(i));
-            //}
-
+            Instantiate(new Bank(currentBankLevel));
 
             base.Initialize();
-            SemaMine.Release(3);
-            //semaFarm.Release(3);
+            SemaMine.Release(1);
+            semaFarm.Release(1);
+
+            minerBuyString = ($"miners cost {workerCost} gold each! - Press q to buy a new miner!");
+            farmerBuyString = ($"farmers cost {workerCost} gold each! - Press w to buy a new farmer!");
+
         }
 
 
@@ -102,32 +123,11 @@ namespace OriginalRTS
                 gameObject.Update(gameTime);
             }
 
+            if (!bankIsUpgrading) bankUpgradeString = ($"Next bank level cost {bankGoldCost} gold and {bankWoodCost} wood! - Press e to upgrade bank!");
+            else if (currentBankLevel == maxBankLevel) bankUpgradeString = ($"The Bank is fully upgraded!");
+            else bankUpgradeString = ($"bank is upgrading");
 
-
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter) && !enterIsPressed)
-            {
-                foreach (KeyValuePair<int, WorkerJob> kvp in dictionaryOfWorkers)
-                {
-                    Console.WriteLine("Key = {0}, Value = {1}",
-                        kvp.Key, kvp.Value);
-                }
-
-                Console.WriteLine($"Current gold is: {gold}");
-
-                enterIsPressed = true;
-            }
-            else if (Keyboard.GetState().IsKeyUp(Keys.Enter))
-            {
-                enterIsPressed = false;
-            }         
-            
-
-            else if (Keyboard.GetState().IsKeyUp(Keys.P))
-            {
-                pIsPressed = false;
-            }
-
+            Keybindings();
             CallInstantiate();
             CallDestroy();
 
@@ -135,7 +135,72 @@ namespace OriginalRTS
             base.Update(gameTime);
         }
 
-       
+        private void Keybindings()
+        {
+            if (Keyboard.GetState().IsKeyDown(Keys.Q) && !qIsPressed)
+            {
+                BuyNewMiner(workerCost);
+                qIsPressed = true;
+            }
+            else if (Keyboard.GetState().IsKeyUp(Keys.Q))
+            {
+                qIsPressed = false;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.W) && !wIsPressed)
+            {
+                BuyNewFarmer(workerCost);
+                wIsPressed = true;
+            }
+            else if (Keyboard.GetState().IsKeyUp(Keys.W))
+            {
+
+                wIsPressed = false;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.E) && !eIsPressed)
+            {
+                UpgradeBank(bankGoldCost, bankWoodCost);
+                eIsPressed = true;
+            }
+            else if (Keyboard.GetState().IsKeyUp(Keys.E))
+            {
+                eIsPressed = false;
+            }
+
+
+
+        }
+
+        private void BuyNewMiner(int cost)
+        {
+            if (currentGold >= cost)
+            {
+                Instantiate(new MineWorker(DictionaryOfWorkers.Count + 1));
+                Console.WriteLine("You have bought a new worker!");
+                currentGold -= cost;
+            }
+        }
+
+        private void BuyNewFarmer(int cost)
+        {
+            if (currentGold >= cost)
+            {
+                Instantiate(new FarmWorker(DictionaryOfWorkers.Count + 1));
+                Console.WriteLine("You have bought a new farmer!");
+                currentGold -= cost;
+            }
+        }
+
+        private void UpgradeBank(int goldCost, int woodCost)
+        {
+            if (currentGold >= goldCost && currentWood >= woodCost && CurrentBankLevel != maxBankLevel)
+            {
+                bankIsUpgrading = true;
+                currentGold -= goldCost;
+                currentWood -= woodCost;
+            }
+        }
 
         protected override void LoadContent()
         {
@@ -152,18 +217,33 @@ namespace OriginalRTS
             
             _spriteBatch.Begin(SpriteSortMode.FrontToBack);
 
-            _spriteBatch.DrawString(textFont,(gold.ToString() + " / " + maxGold), new Vector2(55, 10), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.DrawString(textFont,(currentGold.ToString() + " / " + maxGold), new Vector2(55, 10), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             _spriteBatch.Draw(goldIngot, new Vector2(1, 1), null, Color.White, 0, new Vector2(0, 0), .75f, SpriteEffects.None, 1f);
 
+            _spriteBatch.DrawString(textFont,(currentWood.ToString() + " / " + MaxWood), new Vector2(250, 10), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
 
+
+
+            _spriteBatch.DrawString(textFont,(CurrentBankLevel.ToString() + " / " + MaxBankLevel), new Vector2(500, 10), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+
+
+
+
+
+
+
+            _spriteBatch.DrawString(textFont, countOfMiners.ToString(), new Vector2(250, 250), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.DrawString(textFont, countOfFarmers.ToString(), new Vector2(250, 350), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+
+
+            _spriteBatch.DrawString(textFont,minerBuyString, new Vector2(5, 900), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.DrawString(textFont,farmerBuyString, new Vector2(445 , 900), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.DrawString(textFont,bankUpgradeString, new Vector2(900, 900), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
             _spriteBatch.End();
             base.Draw(gameTime);
         }
-
-
-
 
 
 

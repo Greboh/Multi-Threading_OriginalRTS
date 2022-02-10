@@ -42,6 +42,8 @@ namespace OriginalRTS
         protected bool fullInventory;
         protected bool workerIsAlive;
 
+        protected int bankLevel;
+
         #endregion
 
         #endregion

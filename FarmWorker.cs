@@ -9,11 +9,11 @@ using System.Threading;
 
 namespace OriginalRTS
 {
-    class MineWorker : GameObject
+    class FarmWorker : GameObject
     {
         private static Mutex depositMutex = new Mutex();
 
-        public MineWorker(int id)
+        public FarmWorker(int id)
         {
             try
             {
@@ -25,9 +25,8 @@ namespace OriginalRTS
                 GameWorld.DictionaryOfWorkers.Add(GameWorld.DictionaryOfWorkers.Count + 1, workerJob);
             }
 
-
             this.workerID = id;
-            this.workerJob = WorkerJob.Miner;
+            this.workerJob = WorkerJob.Farmer;
 
             this.fullInventory = false;
             this.workerCurrentInventory = 0;
@@ -36,9 +35,11 @@ namespace OriginalRTS
             this.workerHealth = 100;
             this.workerMaxHealthDegradation = 25;
 
-            GameWorld.CountOfMiners++;
+            GameWorld.CountOfFarmers++;
 
             new Thread(() => Enter(this.workerID)) { IsBackground = true }.Start();
+
+
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -58,33 +59,29 @@ namespace OriginalRTS
 
         public override void Enter(object id)
         {
-
-
-            GameWorld.SemaMine.WaitOne();
+            GameWorld.SemaFarm.WaitOne();
             Thread.Sleep(1000);
 
-            Console.WriteLine("\nMiner " + id + " is entering mine\n");
+            Console.WriteLine($"\n{workerJob} " + id + " is entering the farm\n");
 
             Thread.Sleep(1000);
 
             FarmRessource(id);
 
-
-
             Thread.Sleep(1250);
 
-            GameWorld.SemaMine.Release();
+            GameWorld.SemaFarm.Release();
 
             while (this.fullInventory)
             {
-                if (GameWorld.Gold <= GameWorld.MaxGold - 1)
+                if (GameWorld.CurrentWood <= GameWorld.MaxWood - 1)
                 {
                     DepositThread();
-                    Console.WriteLine($"Miner {this.workerID} has {this.workerHealth} hp left!");
+                    Console.WriteLine($"{workerJob} {this.workerID} has {this.workerHealth} hp left!");
                 }
                 else
                 {
-                    Console.WriteLine("\nGold is at max capacity!\n");
+                    Console.WriteLine("\nWood is at max capacity!\n");
                     Thread.Sleep(5000);
                 }
             }
@@ -92,8 +89,8 @@ namespace OriginalRTS
             if (workerHealth >= 1) new Thread(() => Enter(this.workerID)) { IsBackground = true }.Start();
             else
             {
-                Console.WriteLine($"Miner {this.workerID} has died!");
-                GameWorld.CountOfMiners--;
+                Console.WriteLine($"{workerJob} {this.workerID} has died!");
+                GameWorld.CountOfFarmers--;
                 Destroy(this);
             }
         }
@@ -112,9 +109,6 @@ namespace OriginalRTS
                     this.fullInventory = true;
                     this.workerHealth -= myRandom.Next(20, workerMaxHealthDegradation);
                 }
-
-                //Console.WriteLine("\n" + id + " has mined 10 stones");
-                //Console.WriteLine(id + "'s inventory now weights " + this.workerCurrentInventory);
             }
         }
 
@@ -123,9 +117,9 @@ namespace OriginalRTS
         {
             if (depositMutex.WaitOne(300))
             {
-                Console.WriteLine($"\nMiner {this.workerID} is depositing gold!");
+                Console.WriteLine($"\n{workerJob} {this.workerID} is depositing wood!");
 
-                GameWorld.Gold += workerCurrentInventory;
+                GameWorld.CurrentWood += workerCurrentInventory;
 
                 //Console.WriteLine("Current " + this.workerCurrentInventory);
                 //Console.WriteLine("Max " + this.workerMaxInventory);
@@ -141,13 +135,13 @@ namespace OriginalRTS
             }
             else
             {
-                Console.WriteLine($"\nMiner {this.workerID} didnt get the mutex\n");
+                Console.WriteLine($"\n{workerJob} {this.workerID} didnt get the mutex\n");
                 //Console.WriteLine($"{this.workerID} trying again in 3 second");
                 Thread.Sleep(1500);
             }
         }
 
-        
+
 
     }
 
