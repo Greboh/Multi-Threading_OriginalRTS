@@ -11,8 +11,7 @@ namespace OriginalRTS
     public enum WorkerJob
     {
         Miner,
-        Farmer,
-        Banker
+        Farmer
     }
 
     public class GameWorld : Game
@@ -272,10 +271,8 @@ namespace OriginalRTS
 
 
 
-            //_spriteBatch.Draw(minerIcon, new Vector2(250, 250), null, Color.White, 0, new Vector2(minerIcon.Width, minerIcon.Height), 0.3f, SpriteEffects.None, 1);
             _spriteBatch.DrawString(textFont, countOfMiners.ToString(), new Vector2(1300, 850), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
-            //_spriteBatch.Draw(farmerIcon, new Vector2(250, 450), null, Color.White, 0, new Vector2(farmerIcon.Width, farmerIcon.Height), 0.3f, SpriteEffects.None, 1);
             _spriteBatch.DrawString(textFont, countOfFarmers.ToString(), new Vector2(1465, 850), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
 
