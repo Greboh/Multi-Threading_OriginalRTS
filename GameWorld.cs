@@ -31,10 +31,10 @@ namespace OriginalRTS
         private readonly int screenHeight = 915;    // Y size of window
         private readonly int screenWidth = 1500;    // X size of window
 
-        private static int currentGold = 10000;
+        private static int currentGold = 0;
         private static int maxGold;
 
-        private static int currentWood = 10000;
+        private static int currentWood = 0;
         private static int maxWood;
 
         private static int currentBankLevel = 1;
@@ -51,7 +51,10 @@ namespace OriginalRTS
         private static int countOfMiners = 0;
         private static int countOfFarmers = 0;
 
+        // UI Fonts
         private SpriteFont textFont;
+
+        // Texture elements
         private Texture2D goldIngot;
         private Texture2D woodPile;
         private Texture2D banklevel1;
@@ -61,7 +64,7 @@ namespace OriginalRTS
         private Texture2D farmerIcon;
         private Texture2D uiElement;
 
-
+        // Bools for checking if key is up or down
         private bool qIsPressed = false;
         private bool wIsPressed = false;
         private bool eIsPressed = false;
@@ -212,18 +215,23 @@ namespace OriginalRTS
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Fonts for UI
             textFont = Content.Load<SpriteFont>("TextFont");
+           
+            // Resource textures
             goldIngot = Content.Load<Texture2D>("GoldIngot");
             woodPile = Content.Load<Texture2D>("woodPile");
 
-
+            // Textures for the different levels of banks
             banklevel1 = Content.Load<Texture2D>("bank1");
             banklevel2 = Content.Load<Texture2D>("bank2");
             banklevel3 = Content.Load<Texture2D>("bank3");
 
+            // Textures for worker icons
             minerIcon = Content.Load<Texture2D>("minerIcon");
             farmerIcon = Content.Load<Texture2D>("farmerIcon");
 
+            // Textures for UI elements
             uiElement = Content.Load<Texture2D>("uiElement_2");
 
         }
@@ -253,7 +261,7 @@ namespace OriginalRTS
             }
 
 
-
+            // Draws the current and max amount of resources
             _spriteBatch.DrawString(textFont,(currentGold.ToString() + " / " + maxGold), new Vector2(85, 35), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             _spriteBatch.Draw(goldIngot, new Vector2(25, 25), null, Color.White, 0, new Vector2(0, 0), .75f, SpriteEffects.None, 1f);
 
@@ -262,20 +270,15 @@ namespace OriginalRTS
 
 
 
-
+            // Draws the level at which the bank is at, with text
             _spriteBatch.DrawString(textFont,"Bank lvl: " + (CurrentBankLevel.ToString() + " / " + MaxBankLevel), new Vector2(680, 500), Color.Black, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
 
-
-
-
-
-
+            // Draws amount of workers with text
             _spriteBatch.DrawString(textFont, countOfMiners.ToString(), new Vector2(1300, 850), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
-
             _spriteBatch.DrawString(textFont, countOfFarmers.ToString(), new Vector2(1465, 850), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
-
+            // Draws info text
             _spriteBatch.DrawString(textFont,minerBuyString, new Vector2(5, 830), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             _spriteBatch.DrawString(textFont,farmerBuyString, new Vector2(5 , 860), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             _spriteBatch.DrawString(textFont,bankUpgradeString, new Vector2(5, 890), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
