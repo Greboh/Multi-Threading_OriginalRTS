@@ -144,7 +144,7 @@ namespace OriginalRTS
             base.Update(gameTime);
         }
         /// <summary>
-        /// Method for keybindings associated upgrading bank and purches of new miners
+        /// Method for keybindings associated with upgrading bank and purches of new miners
         /// </summary>
         private void Keybindings()
         {
@@ -183,6 +183,10 @@ namespace OriginalRTS
 
         }
 
+        /// <summary>
+        /// BuyNewMiner recieves cost of worker from KeyBindings()
+        /// </summary>
+        /// <param name="cost"></param>
         private void BuyNewMiner(int cost)
         {
             if (currentGold >= cost)
@@ -192,7 +196,10 @@ namespace OriginalRTS
                 currentGold -= cost;
             }
         }
-
+        /// <summary>
+        /// BuyNewFarmer recieves cost of worker from KeyBindings()
+        /// </summary>
+        /// <param name="cost"></param>
         private void BuyNewFarmer(int cost)
         {
             if (currentGold >= cost)
@@ -202,10 +209,14 @@ namespace OriginalRTS
                 currentGold -= cost;
             }
         }
-
+        /// <summary>
+        /// Bank recieves cost of upgrade from KeyBindings()
+        /// </summary>
+        /// <param name="goldCost"></param>
+        /// <param name="woodCost"></param>
         private void UpgradeBank(int goldCost, int woodCost)
         {
-            if (currentGold >= goldCost && currentWood >= woodCost && CurrentBankLevel != maxBankLevel)
+            if (currentGold >= goldCost && currentWood >= woodCost && CurrentBankLevel != maxBankLevel) //checks if player has enough resources to upgrade to next level and bank has not reached max level
             {
                 bankIsUpgrading = true;
                 currentGold -= goldCost;
