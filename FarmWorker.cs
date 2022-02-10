@@ -59,7 +59,7 @@ namespace OriginalRTS
 
         public override void Enter(object id)
         {
-            GameWorld.SemaFarm.WaitOne();
+            GameWorld.SemaFarm.WaitOne(); 
             Thread.Sleep(1000);
 
             Console.WriteLine($"\n{workerJob} " + id + " is entering the farm\n");
@@ -70,7 +70,7 @@ namespace OriginalRTS
 
             Thread.Sleep(1250);
 
-            GameWorld.SemaFarm.Release();
+            GameWorld.SemaFarm.Release(); 
 
             while (this.fullInventory)
             {

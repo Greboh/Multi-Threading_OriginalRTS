@@ -11,10 +11,11 @@ namespace OriginalRTS
 {
     class MineWorker : GameObject
     {
-        private static Mutex depositMutex = new Mutex();
+        private static Mutex depositMutex = new Mutex(); // creates mutex
 
         public MineWorker(int id)
         {
+            //checks if id in dictionary is available
             try
             {
                 GameWorld.DictionaryOfWorkers.Add(id, workerJob);
@@ -60,8 +61,8 @@ namespace OriginalRTS
         {
 
 
-            GameWorld.SemaMine.WaitOne();
-            Thread.Sleep(1000);
+            GameWorld.SemaMine.WaitOne(); //thread waits untill space inside semaphore is released. 
+            Thread.Sleep(1000); // sleep before executing task. 
 
             Console.WriteLine("\nMiner " + id + " is entering mine\n");
 
@@ -71,10 +72,11 @@ namespace OriginalRTS
 
 
 
-            Thread.Sleep(1250);
+            Thread.Sleep(1250); //sleep before releasing space. 
 
-            GameWorld.SemaMine.Release();
+            GameWorld.SemaMine.Release(); //Sema releases space inside the mine when thread has finished task - new thread can enter and execute
 
+            //while loop runs while gold variable is at maximum. Thread sleeps until it can deposit its inventory
             while (this.fullInventory)
             {
                 if (GameWorld.Gold <= GameWorld.MaxGold - 1)
@@ -89,7 +91,8 @@ namespace OriginalRTS
                 }
             }
 
-            if (workerHealth >= 1) new Thread(() => Enter(this.workerID)) { IsBackground = true }.Start();
+            //kills worker if worker health is below 1, if not worker resets.
+            if (workerHealth >= 1) new Thread(() => Enter(this.workerID)) { IsBackground = true }.Start(); 
             else
             {
                 Console.WriteLine($"Miner {this.workerID} has died!");
@@ -98,19 +101,24 @@ namespace OriginalRTS
             }
         }
 
+        /// <summary>
+        /// Method for farming/adding Ressource to workerCurrentinventory
+        /// </summary>
+        /// <param name="id"></param>
         public override void FarmRessource(object id)
         {
-            while (this.workerMaxInventory > this.workerCurrentInventory)
+            while (this.workerMaxInventory > this.workerCurrentInventory) 
             {
-                this.workerCurrentInventory += myRandom.Next(1, 75);
+                this.workerCurrentInventory += myRandom.Next(1, 75);//random value added to worker inventory to simulate ressource farming.
 
                 Thread.Sleep(500);
 
+                //statement to end task and remove health from worker. 
                 if (this.workerCurrentInventory >= this.workerMaxInventory)
                 {
-                    this.workerCurrentInventory = this.workerMaxInventory;
-                    this.fullInventory = true;
-                    this.workerHealth -= myRandom.Next(20, workerMaxHealthDegradation);
+                    this.workerCurrentInventory = this.workerMaxInventory; //worker inventory is now full = 100
+                    this.fullInventory = true; 
+                    this.workerHealth -= myRandom.Next(20, workerMaxHealthDegradation); // remove random number/value from worker health. 
                 }
 
                 //Console.WriteLine("\n" + id + " has mined 10 stones");
@@ -119,27 +127,26 @@ namespace OriginalRTS
         }
 
 
+        /// <summary>
+        /// Method for depositing resources into bank. 
+        /// </summary>
         private void DepositThread()
         {
-            if (depositMutex.WaitOne(300))
+            if (depositMutex.WaitOne(300)) // Mutex ensures only one thread/worker can acces bank/variable
             {
                 Console.WriteLine($"\nMiner {this.workerID} is depositing gold!");
 
-                GameWorld.Gold += workerCurrentInventory;
+                GameWorld.Gold += workerCurrentInventory; //worker inventory added to bank/variable. 
 
-                //Console.WriteLine("Current " + this.workerCurrentInventory);
-                //Console.WriteLine("Max " + this.workerMaxInventory);
 
-                //Console.WriteLine($"{this.workerID} got the mutex");
+                Thread.Sleep(1000); //worker sleeps before release of mutex
 
-                Thread.Sleep(1000);
-
-                depositMutex.ReleaseMutex();
-                this.workerCurrentInventory = 0;
-                this.fullInventory = false;
+                depositMutex.ReleaseMutex(); //mutex is released
+                this.workerCurrentInventory = 0; //resets worker inventory
+                this.fullInventory = false; // resets worker inventory
 
             }
-            else
+            else // thread sleeps if mutex isn't available 
             {
                 Console.WriteLine($"\nMiner {this.workerID} didnt get the mutex\n");
                 //Console.WriteLine($"{this.workerID} trying again in 3 second");
