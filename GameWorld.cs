@@ -54,6 +54,13 @@ namespace OriginalRTS
 
         private SpriteFont textFont;
         private Texture2D goldIngot;
+        private Texture2D woodPile;
+        private Texture2D banklevel1;
+        private Texture2D banklevel2;
+        private Texture2D banklevel3;
+        private Texture2D minerIcon;
+        private Texture2D farmerIcon;
+        private Texture2D uiElement;
 
 
         private bool qIsPressed = false;
@@ -208,6 +215,17 @@ namespace OriginalRTS
 
             textFont = Content.Load<SpriteFont>("TextFont");
             goldIngot = Content.Load<Texture2D>("GoldIngot");
+            woodPile = Content.Load<Texture2D>("woodPile");
+
+
+            banklevel1 = Content.Load<Texture2D>("bank1");
+            banklevel2 = Content.Load<Texture2D>("bank2");
+            banklevel3 = Content.Load<Texture2D>("bank3");
+
+            minerIcon = Content.Load<Texture2D>("minerIcon");
+            farmerIcon = Content.Load<Texture2D>("farmerIcon");
+
+            uiElement = Content.Load<Texture2D>("uiElement_2");
 
         }
 
@@ -217,15 +235,36 @@ namespace OriginalRTS
             
             _spriteBatch.Begin(SpriteSortMode.FrontToBack);
 
-            _spriteBatch.DrawString(textFont,(currentGold.ToString() + " / " + maxGold), new Vector2(55, 10), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
-            _spriteBatch.Draw(goldIngot, new Vector2(1, 1), null, Color.White, 0, new Vector2(0, 0), .75f, SpriteEffects.None, 1f);
-
-            _spriteBatch.DrawString(textFont,(currentWood.ToString() + " / " + MaxWood), new Vector2(250, 10), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.Draw(uiElement, new Vector2(0, 0), null, Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1);
 
 
+            // Switch for changing out building asset when upgrading
+            switch (currentBankLevel)
+            {
+                case 1:
+                    _spriteBatch.Draw(banklevel1, new Vector2(780, 500), null, Color.White, 0, new Vector2(banklevel1.Width, banklevel1.Height), 1, SpriteEffects.None, 1);
+                    break;
+                case 2:
+                    _spriteBatch.Draw(banklevel2, new Vector2(800, 500), null, Color.White, 0, new Vector2(banklevel2.Width, banklevel2.Height), 1, SpriteEffects.None, 1);
+
+                    break;
+                case 3:
+                    _spriteBatch.Draw(banklevel3, new Vector2(830, 500), null, Color.White, 0, new Vector2(banklevel3.Width, banklevel3.Height), 1, SpriteEffects.None, 1);
+                    break;
+            }
 
 
-            _spriteBatch.DrawString(textFont,(CurrentBankLevel.ToString() + " / " + MaxBankLevel), new Vector2(500, 10), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+
+            _spriteBatch.DrawString(textFont,(currentGold.ToString() + " / " + maxGold), new Vector2(85, 35), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.Draw(goldIngot, new Vector2(25, 25), null, Color.White, 0, new Vector2(0, 0), .75f, SpriteEffects.None, 1f);
+
+            _spriteBatch.DrawString(textFont,(currentWood.ToString() + " / " + MaxWood), new Vector2(250, 35), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.Draw(woodPile, new Vector2(200, 25), null, Color.White, 0, new Vector2(0, 0), .75f, SpriteEffects.None, 1f);
+
+
+
+
+            _spriteBatch.DrawString(textFont,"Bank lvl: " + (CurrentBankLevel.ToString() + " / " + MaxBankLevel), new Vector2(680, 500), Color.Black, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
 
 
@@ -233,13 +272,18 @@ namespace OriginalRTS
 
 
 
-            _spriteBatch.DrawString(textFont, countOfMiners.ToString(), new Vector2(250, 250), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
-            _spriteBatch.DrawString(textFont, countOfFarmers.ToString(), new Vector2(250, 350), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            //_spriteBatch.Draw(minerIcon, new Vector2(250, 250), null, Color.White, 0, new Vector2(minerIcon.Width, minerIcon.Height), 0.3f, SpriteEffects.None, 1);
+            _spriteBatch.DrawString(textFont, countOfMiners.ToString(), new Vector2(1300, 850), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+
+            //_spriteBatch.Draw(farmerIcon, new Vector2(250, 450), null, Color.White, 0, new Vector2(farmerIcon.Width, farmerIcon.Height), 0.3f, SpriteEffects.None, 1);
+            _spriteBatch.DrawString(textFont, countOfFarmers.ToString(), new Vector2(1465, 850), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
 
-            _spriteBatch.DrawString(textFont,minerBuyString, new Vector2(5, 900), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
-            _spriteBatch.DrawString(textFont,farmerBuyString, new Vector2(445 , 900), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
-            _spriteBatch.DrawString(textFont,bankUpgradeString, new Vector2(900, 900), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.DrawString(textFont,minerBuyString, new Vector2(5, 830), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.DrawString(textFont,farmerBuyString, new Vector2(5 , 860), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            _spriteBatch.DrawString(textFont,bankUpgradeString, new Vector2(5, 890), Color.White, 0, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+
+
 
             _spriteBatch.End();
             base.Draw(gameTime);

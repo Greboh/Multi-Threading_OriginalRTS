@@ -15,7 +15,7 @@ namespace OriginalRTS
 
         #region Float
 
-
+        protected Vector2 origin;
         #endregion
 
         #region Misc
